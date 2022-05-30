@@ -1,5 +1,5 @@
-/data
-/in_development
+data/
+in_development/
 index.html
 run_data_site.r
-/rsconnect
+rsconnect/
