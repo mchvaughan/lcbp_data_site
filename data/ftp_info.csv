@@ -1,0 +1,3 @@
+address,credentials,note
+ftp://02d0c8c.netsolhost.com/valcour_pushed_data.csv,lcbp_data:TFA&Yr#NXnqd#nK8,valcour buoy data pushed by wqdata live
+ftp://02d0c8c.netsolhost.com/lamoille_pushed_data.csv,lcbp_data:TFA&Yr#NXnqd#nK8,lamoille buoy data pushed by wqdata live

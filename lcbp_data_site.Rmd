@@ -1,0 +1,274 @@
+---
+title: "Lake Champlain Basin data"
+output: 
+ flexdashboard::flex_dashboard:
+   orientation: columns
+   vertical_layout: fill
+   theme: bootstrap
+   includes:
+    in_header: data/google_analytics.html
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+library(plotly)
+library(lubridate)
+library(viridis)
+library(scales)
+library(mapboxapi)
+library(leaflet)
+knitr::opts_chunk$set(echo = FALSE)
+
+this_hour <- Sys.time() %>% # find the current hour, for caching
+             hour()
+
+# Source the data processing script to bring in all the data
+"lcbp_data_processor.r" %>%
+  source()
+
+```
+
+Home
+==================================================================
+
+Home tabs {.tabset}
+----------------------------------------------
+### Welcome
+
+This website shows real-time data from monitoring programs in Lake Champlain and throughout the Lake Champlain Basin.
+
+Please choose a data type above. All data plots are interactive. Hover over plots to see details on each measurement, or click and drag to zoom in on a section. Additional features can be found at the top right of each plot.
+
+**This website is under development. All data is provisional and for educational purposes only.**
+
+### Info
+####
+Lake level, lake temperature, and tributary discharge data is collected by the [US Geological Survey](https://dashboard.waterdata.usgs.gov/). 
+
+The Lamoille River and Malletts Bay buoys are part of a pilot study to upgrade and modernize the Lake Champlain Long-term Monitoring Program. These buoy are instrumented with an array of water quality and weather sensors that measure several parameters every 15 minutes.
+
+Lake Champlain monitoring buoys are supported by the [Lake Champlain Basin Program](http://lcbp.org){target="_blank"}, in partnership with New York and Vermont Departments of Environmental Conservation and SUNY Plattsburgh.
+
+Snow data provided by [NWS Burlington office](https://www.weather.gov/btv/) and the [University of Vermont](https://waw.w3.uvm.edu//skivt-l/?Page=depths.php){target="_blank"}. Latest and historical Mt. Mansfield snow depth data is available in comma-separated format [at this link](https://waw.w3.uvm.edu/skivt-l/stinkfoot.php){target="_blank"}. 
+
+This website was developed by [Matthew Vaughan](mailto:mvaughan@lcbp.org), Chief Scientist at the [Lake Champlain Basin Program](https://lcbp.org){target="_blank"}
+
+**This site is in development. All data is provisional and for educational purposes only.**
+
+####
+![](data/LCBP_NEIWPCC.png){width=50%}
+
+
+Level
+==================================================================
+```{r lake_level}
+ lake_level_together <- lake_level %>%
+   mutate(station = station %>%
+                 fct_reorder2(timestamp, elevation_ft)) %>%
+    ggplot() +
+    geom_line(aes(x = timestamp,
+                  y = elevation_ft,
+                  color = station),
+              size = 1,
+              alpha = 0.5) +
+    scale_color_viridis("Level station",
+                        discrete = TRUE) + 
+   scale_y_continuous(breaks = pretty_breaks()) +
+   scale_x_datetime(breaks = pretty_breaks()) +
+   labs(x = "",
+        y = "Lake water surface elevation\n(feet above NGVD 1929)") +
+   theme(axis.text = element_text(face = "bold",
+                            size = 14),
+         axis.title = element_text(face = "bold",
+                            size = 14),
+         legend.text = element_text(face = "bold",
+                                    size = 10))
+
+  ggplotly(lake_level_together)
+
+```
+
+Temperature
+==================================================================
+
+```{r lake_temp}
+# plot water temps in deg F
+ lake_temp_together_degF <- lake_temp %>%
+   mutate(station = station %>%
+                 fct_reorder2(timestamp, water_temp_degF)) %>%
+    ggplot() +
+    geom_line(aes(x = timestamp,
+                  y = water_temp_degF,
+                  color = station),
+              size = 1,
+              alpha = 0.5) +
+    scale_color_viridis("Temperature station",
+                        discrete = TRUE) + 
+   scale_y_continuous(breaks = pretty_breaks()) +
+   scale_x_datetime(breaks = pretty_breaks()) +
+   labs(x = "",
+        y = "Lake water temperature\n(Degrees F)") +
+   theme(axis.text = element_text(face = "bold",
+                            size = 14),
+         axis.title = element_text(face = "bold",
+                            size = 14),
+         legend.text = element_text(face = "bold",
+                                    size = 10))
+
+ ggplotly(lake_temp_together_degF)
+
+
+```
+
+Tributaries
+==================================================================
+
+Tributary tabs {.tabset}
+----------------------------------------------------------------
+
+### Tributary discharge
+
+```{r tribq}
+  tribq_together_cfs <- tribq %>%
+    mutate(trib = trib %>%
+                 fct_reorder2(timestamp, discharge_cms)) %>%
+    ggplot() +
+    geom_line(aes(x = timestamp,
+                  y = discharge_cfs,
+                  color = trib),
+              size = 1,
+              alpha = 0.5) +
+    scale_color_viridis("Tributary",
+                        discrete = TRUE) + 
+   labs(x = "",
+        y = "Discharge (cubic feet per second)") +
+   theme(axis.text = element_text(face = "bold",
+                            size = 14),
+         axis.title = element_text(face = "bold",
+                            size = 14),
+         legend.text = element_text(face = "bold",
+                                    size = 10))
+
+   ggplotly(tribq_together_cfs)
+```
+
+### Total discharge
+```{r total_q}
+# Sum discharges together by timestamp
+combined_q <- tribq %>%
+  select(!c(trib, gage_number)) %>%
+  group_by(timestamp) %>%
+  summarise(total_discharge_cms = sum(discharge_cms),
+            total_discharge_cfs = sum(discharge_cfs),
+            n = n()) %>%
+  filter(!n < max(n)) # remove timestamps that don't include all tribs
+ 
+ combined_q_plot_cfs <- combined_q %>%
+  ggplot() +
+  geom_line(aes(x = timestamp, y = total_discharge_cfs)) +
+  labs(x = "",
+        y = paste("Total measured discharge\n(cubic feet per second)")) +
+  theme(axis.text = element_text(face = "bold",
+                            size = 14),
+        axis.title = element_text(face = "bold",
+                            size = 12),
+        legend.text = element_text(face = "bold",
+                                    size = 10))
+  
+n_combined_tribs <- combined_q %>%
+           pull("n") %>%
+           max()
+```
+
+####
+The plot below shows the total measured discharge (volume of water per time) delivered to Lake Champlain from `r n_combined_tribs` tributaries. **Note that there are tributaries and direct-to-lake sources of water that are not monitored and/or not included in this plot.**
+
+####
+```{r total_q_plot}
+   ggplotly(combined_q_plot_cfs) 
+```
+
+
+### Map
+
+```{r trib_map}
+# define buoy location
+station_loc <- "data/trib_station_info.csv" %>%
+                 read_csv()
+
+# subbasins_poly <- "data/lcb_subbasin_shapefile/LCB_2013_subbasins.shp" %>%
+#                   st_read()
+# create the map
+station_loc %>%
+  leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  # addPolygons(data = subbasins_poly) %>%
+  addMarkers(lng = ~lng,
+             lat = ~lat,
+             label = ~trib)
+
+```
+Buoys
+==================================================================
+
+Plots {.tabset}
+-----------------------------------------------------------------
+
+### Lamoille River
+
+```{r lamoille}
+lamoille_plot <- lamoille %>%
+  select(-c(pH_mV, odo_mgL, cond_uScm, pH)) %>%
+ pivot_longer(-timestamp,
+              names_to = "var",
+              values_to = "value") %>%
+  mutate(var = var %>%
+               recode(odo_pct_sat = "Dissolved oxygen (percent saturation)",
+                      sp_cond_uScm = "Specific conductivity (uS/cm)",
+                      temp_degC = "Temperature (degrees Celsius)",
+                      turb_fnu = "Turbidity (FNU)",
+                      nitrate_mgL = "Nitrate-N (mg/L)")) %>%
+    ggplot() +
+  geom_line(aes(x = timestamp,
+                y = value,
+                color = var)) +
+  facet_wrap(var ~ .,
+             scales = "free_y",
+             ncol = 1,
+             strip.position = "top") +
+  scale_color_viridis(discrete = TRUE) +
+  theme(legend.position = "none",
+        text = element_text(face = "bold",
+                                  size = 14)) +
+  labs(x = "", y = "")
+
+  ggplotly(lamoille_plot)
+  
+
+```
+
+### Malletts Bay
+The Malletts Bay buoy will be deployed in spring 2022. 
+
+### Valcour
+The Valcour buoy will be deployed in spring 2022. 
+
+### Upper Saranac Lake
+
+Data from the Upper Saranac Lake Environmental Monitoring Platform can be found [at this website](https://adkwatershed.shinyapps.io/UpperSaranacLake/){target="_blank"}, hosted by the Paul Smith's College Adirondack Watershed Institute. 
+
+Imagery
+==============================================================================
+
+Note that satellite images may be obscured by cloud cover or processing errors.
+
+Images {.tabset}
+-------------------------------------------------------------------------
+
+### Yesterday (`r Sys.Date() - 1`)
+
+![](plotdata/sat_yesterday.png)
+
+### Past week (`r Sys.Date() - 8` through `r Sys.Date() - 1`)
+
+![](plotdata/sat_week.gif)
