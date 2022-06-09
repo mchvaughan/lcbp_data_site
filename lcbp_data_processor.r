@@ -14,9 +14,6 @@ library(magick)
 ftp_info <- "data/ftp_info.csv" %>%
   read_csv()
 
-valcour_url <- ftp_info %>%
-  pluck("address", 1)
-
 ftp_credentials <- ftp_info %>%
   pluck("credentials", 1)
 
@@ -26,7 +23,7 @@ lake_level_station_info <- "data/lake_level_station_info.csv" %>%
   mutate(gage_number = gage_number %>% # Add leading zero to all gage codes
            paste0("0", .)) 
 
-lake_level_day_window <- 30
+lake_level_day_window <- 120
 
 param_code <- "62614" # Lake water surface elevation above NGVD 1929, feet
 # param_code <- "62615" # Lake water surface elevation above NAVD 1988, feet
@@ -61,7 +58,7 @@ lake_level <- lake_level_station_info %>%
    mutate(gage_number = gage_number %>% # Add leading zero to all gage codes
             paste0("0", .)) 
  # enter plot window duration
- lake_temp_day_window <- 30
+ lake_temp_day_window <- 120
  # set start and end dates
  end <- Sys.Date()
  start <-  end - duration(lake_temp_day_window, units = "days")
@@ -97,7 +94,7 @@ lake_level <- lake_level_station_info %>%
    mutate(gage_number = gage_number %>% # Add leading zero to all gage codes
             paste0("0", .)) 
  
- trib_day_window <- 30
+ trib_day_window <- 120
  
  param_code <- "00060" # discharge in cfs
  time_zone <- "America/New_York"
@@ -135,25 +132,92 @@ lake_level <- lake_level_station_info %>%
    read_csv(skip = 1) %>% # skip header
    rename(timestamp = `Time America/New_York UTC-04:00`) %>%
    drop_na() %>%
-   mutate(timestamp = mdy_hms(timestamp)) %>%
+   mutate(timestamp = timestamp %>%
+                      mdy_hms()) %>%
    mutate_if(is.character, as.numeric) %>% # convert all those characters to numeric
    filter(timestamp > ymd_hms("2022-05-06 12:30:00")) %>% # start after deployment date
+   select(-`pH mV`) %>% # remove pH_mV variable for now
    rename(temp_degC = Temperature,
           sp_cond_uScm = `Sp Cond`,
           cond_uScm = Conductivity,
-          pH_mV = `pH mV`,
           odo_mgL = ODO,
           odo_pct_sat = ODOSat,
           turb_fnu = `Turbidity FNU`,
           nitrate_mgL = `NO3-`) %>%
    filter(timestamp <= ymd_hms("2022-05-20 09:30:00") | # removing measurements during maintenance manually for now; planning to write a function that does this better. 
             timestamp >= ymd_hms("2022-05-20 11:30:00")) %>%
-   mutate(nitrate_mgL = case_when(timestamp >= ymd_hms("2022-05-20 11:30:00") ~ nitrate_mgL,
-                                  TRUE ~ NA_real_))
+   mutate(nitrate_mgL = case_when(timestamp >= ymd_hms("2022-06-02 10:00:00") ~ nitrate_mgL, # remove nitrate values from before it was properly calibrated
+                                  TRUE ~ NA_real_)) %>%
+   mutate_if(is.numeric, funs(if_else(. < 0, 0, .))) # replace negatives with zero.
  
  # write it
  lamoille %>%
    write_csv("plotdata/lamoille.csv")
+ 
+ ## Malletts ------------------------------------------
+ malletts <- ftp_info %>%
+   pluck("address", 3) %>% # pull out lamoille address
+   getURL(userpwd = ftp_credentials) %>% # grab file
+   read_csv(skip = 1) %>% # skip header
+   rename(timestamp = `Time America/New_York UTC-04:00`) %>%
+   drop_na() %>%
+   mutate(timestamp = timestamp %>%
+                      mdy_hms()) %>%
+   mutate_if(is.character, as.numeric) %>% # convert all those characters to numeric
+   filter(timestamp >= ymd_hms("2022-05-31 14:30:00")) %>% # start after deployment date
+   rename(temp_01m = Temp00,
+          temp_02m = Temp01,
+          temp_03m = Temp02,
+          temp_04m = Temp03,
+          temp_05m = Temp04,
+          temp_06m = Temp05,
+          temp_07m = Temp06,
+          temp_08m = Temp07,
+          temp_09m = Temp08,
+          temp_10m = Temp09,
+          temp_11m = Temp10,
+          temp_12m = Temp11,
+          temp_13m = Temp12,
+          temp_14m = Temp13,
+          temp_15m = Temp14,
+          temp_16m = Temp15,
+          temp_17m = Temp16,
+          temp_18m = Temp17,
+          temp_19m = Temp18,
+          temp_20m = Temp19,
+          temp_21m = Temp20,
+          temp_22m = Temp21,
+          temp_23m = Temp22,
+          temp_24m = Temp23,
+          temp_25m = Temp24,
+          temp_26m = Temp25,
+          temp_27m = Temp26,
+          temp_28m = Temp27,
+          temp_degC = Temperature,
+          sp_cond_uScm = `Sp Cond`,
+          cond_uScm = Conductivity,
+          odo_mgL = ODO,
+          odo_pct_sat = ODOSat,
+          turb_fnu = `Turbidity FNU`,
+          chlorophyll_rfu = `Chlorophyll RFU`,
+          chlorophyll_ugL = `Chlorophyll`,
+          phycocyanin_rfu = `BGA-Phycocyanin RFU`,
+          phycocyanin_ugL = `BGA-PC`,
+          nitrate_mgL = `NO3-`,
+          rel_atm_pressure_hPa = `Rel. Barometric Pressure`,
+          air_temp_degC = `Air Temperature`,
+          rel_humidity_pct = `Relative Humidity`,
+          wind_speed_mps = `Wind Speed`,
+          max_wind_speed_mps = `Max Wind Sp`,
+          wind_direction_deg = `Wind Direction`,
+          solar_radiation_Wm2 = `Solar Rad`,
+          heading_deg = `Heading`) %>%
+   mutate_if(is.numeric, funs(if_else(. < 0, 0, .))) # replace negatives with zero.
+ 
+ 
+ # write it
+ malletts %>%
+   write_csv("plotdata/malletts.csv")
  
 # Snow ----------------------------------------
 this_winter <- Sys.Date() %>%
