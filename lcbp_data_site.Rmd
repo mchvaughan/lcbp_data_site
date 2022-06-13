@@ -95,7 +95,10 @@ Weather
                    yAxis = 4) %>%
     hc_colors(viridis(5)) %>%
    hc_title(text = "Provisional weather data from the Malletts Bay monitoring buoy",
-            align = "left")
+            align = "left") %>%
+   hc_plotOptions(series = list(label = # label series
+                           list(enabled = TRUE))) %>%
+     hc_navigator(series = list(name = "")) # remove navigator series name so it's not labeled
 
  malletts_weather_plot
 
@@ -128,7 +131,8 @@ Lake level
               name = "Richelieu River at Rouses Point, NY") %>%
     hc_colors(viridis(4)) %>%
     hc_title(text = "Lake Champlain surface elevation, in feet above sea level",
-             align = "left")
+             align = "left") %>%
+    hc_tooltip(valueDecimals = 1)
    
    lake_level_plot
   
@@ -166,7 +170,8 @@ Temp tabs {.tabset}
               name = "Richelieu River at Rouses Point, NY") %>%
     hc_colors(viridis(3)) %>%
     hc_title(text = "Lake Champlain water temperature data from USGS stations, in degrees F",
-             align = "left")
+             align = "left") %>%
+    hc_tooltip(valueDecimals = 1)
    
    lake_temp_plot
  
@@ -274,7 +279,11 @@ Plots {.tabset}
                yAxis = 4) %>%
     hc_colors(plasma(5)) %>%
     hc_title(text = "Provisional water quality data from the Lamoille River monitoring buoy",
-             align = "left")
+             align = "left") %>%
+    hc_tooltip(valueDecimals = 1) %>%
+   hc_plotOptions(series = list(label =  # label the series
+                           list(enabled = TRUE))) %>%
+     hc_navigator(series = list(name = "")) # remove the navigator series name so it's not labeled
    
    lamoille_wq_plot
    
@@ -314,7 +323,11 @@ Plots {.tabset}
                yAxis = 6) %>%
     hc_colors(plasma(8)) %>%
     hc_title(text = "Provisional water quality data from the Malletts Bay monitoring buoy",
-             align = "left")
+             align = "left") %>%
+    hc_tooltip(valueDecimals = 1) %>%
+   hc_plotOptions(series = list(label = # label the series
+                           list(enabled = TRUE))) %>%
+     hc_navigator(series = list(name = "")) # remove the navigator series name so it's not labeled
    
    malletts_wq_plot
 ```
@@ -397,7 +410,8 @@ Flow tabs {.tabset}
                sort = TRUE) %>%
     hc_colors(magma(19)) %>%
     hc_title(text = "Lake Champlain tributary discharge data from USGS, in cubic feet per second",
-             align = "left")
+             align = "left") %>%
+    hc_tooltip(valueDecimals = 1)
    
    tribq_plot
 
@@ -435,7 +449,8 @@ n_combined_tribs <- combined_q %>%
                           " tributaries to Lake Champlain, in cubic feet per second"),
              align = "left") %>%
     hc_subtitle(text = "Note that several tributaries and direct-to-lake sources of water that are not monitored and/or not included in this plot",
-                align = "left")
+                align = "left") %>%
+    hc_tooltip(valueDecimals = 1)
   
    combined_q_plot
 ```

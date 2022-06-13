@@ -212,7 +212,9 @@ lake_level <- lake_level_station_info %>%
           wind_direction_deg = `Wind Direction`,
           solar_radiation_Wm2 = `Solar Rad`,
           heading_deg = `Heading`) %>%
-   mutate_if(is.numeric, funs(if_else(. < 0, 0, .))) # replace negatives with zero.
+   mutate_if(is.numeric, funs(if_else(. < 0, 0, .))) %>% # replace negatives with zero.
+   filter(timestamp <= ymd_hms("2022-06-09 09:15:00") | # removing error measurements manually for now; planning to write a function that does this better. 
+            timestamp >= ymd_hms("2022-06-09 09:45:00"))
  
  
  # write it
