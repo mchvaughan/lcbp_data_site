@@ -1,6 +1,4 @@
 timestamp,air_temp_degC,rel_humidity_pct,rel_atm_pressure_hPa,wind_speed_mps,max_wind_speed_mps,wind_direction_deg,solar_radiation_Wm2,heading_deg
-2025-04-26T17:20:00Z,10.4,100,1003.3,6.2,7.6,346,14,2
-2025-04-26T17:30:00Z,NA,NA,1003.9,9.4,11.8,338,5,2
 2025-04-26T18:20:00Z,10.5,100,1004.7,6.2,8.1,1,25,2
 2025-04-26T18:30:00Z,11,100,1004.9,5.6,8.5,7,11,2
 2025-04-26T18:40:00Z,11.3,99,1005,6.2,7.7,2,22,2
