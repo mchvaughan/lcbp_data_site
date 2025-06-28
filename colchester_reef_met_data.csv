@@ -1,6 +1,4 @@
 timestamp,air_temp_degC,rel_humidity_pct,rel_atm_pressure_hPa,wind_speed_mps,max_wind_speed_mps,wind_direction_deg,solar_radiation_Wm2,heading_deg,wind_speed_knots,air_temp_degF
-2025-04-30T21:00:00Z,7.9,67,1021.8,4.2,4.5,31,0,2,8.164128,46.22
-2025-04-30T21:10:00Z,7.8,66,1021.9,4.3,4.7,34,0,2,8.358512,46.04
 2025-04-30T21:20:00Z,7.8,67,1022.1,4.8,5,33,0,2,9.330432,46.04
 2025-04-30T21:30:00Z,8,65,1021.9,3.3,4.2,30,0,2,6.4146719999999995,46.4
 2025-04-30T21:40:00Z,7.7,68,1022,3,3.1,30,0,2,5.83152,45.86
