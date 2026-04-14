@@ -1,1 +1,2 @@
 timestamp,air_temp_degC,rel_humidity_pct,rel_atm_pressure_hPa,wind_speed_mps,max_wind_speed_mps,wind_direction_deg,solar_radiation_Wm2,heading_deg,wind_speed_knots,air_temp_degF
+2026-04-14T14:10:00Z,5.2,97,1012,7.9,8.5,317,27,330,15.356336,41.36
